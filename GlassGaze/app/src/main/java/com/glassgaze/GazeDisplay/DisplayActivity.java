@@ -26,6 +26,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import com.glassgaze.GazeDisplay.Demos.ExperimentShow;
 import com.glassgaze.GazeDisplay.Demos.GazeShow;
 
 import com.glassgaze.GazeDisplay.Demos.SimpleGazeList.GazeListActivity;
@@ -54,10 +55,12 @@ public final class DisplayActivity extends Activity {
 
 
     // Index of the cards.
-   static final int GAZESHOW = 1;
-       static final int GAZELIST =2;
+    static final int EXPERIMENT_SHOW = 1;
+   static final int GAZESHOW = 2;
+       static final int GAZELIST =3;
 
-    static final int MOREDEMOS =3;
+    static final int MOREDEMOS =4;
+
 
 
 
@@ -311,15 +314,6 @@ public final class DisplayActivity extends Activity {
         super.onDestroy();
     }
 
-    @Override
-    protected void onStart() {
-        Intent intent= new Intent(this, WifiService.class);
-        bindService(intent, mConnection,Context.BIND_AUTO_CREATE);
-
-        super.onStart();
-
-
-    }
 
     @Override
     protected void onResume() {
@@ -332,15 +326,6 @@ public final class DisplayActivity extends Activity {
 
     }
 
-    @Override
-    protected void onStop() {
-        if(mBounded) {
-            unbindService(mConnection);
-            mBounded = false;
-        }
-        super.onStop();
-
-    }
     @Override
     protected void onPause() {
 
@@ -407,6 +392,11 @@ public final class DisplayActivity extends Activity {
         cards.add(0, new Card(context)
                 .setText(R.string.text_displayGaze_main));
 
+        cards.add(EXPERIMENT_SHOW, new Card(context)
+                .addImage(getImageResource(EXPERIMENT_SHOW))
+                .setImageLayout(Card.ImageLayout.LEFT)
+                .setText("Experiment"));
+
         cards.add(GAZESHOW, new Card(context)
                 .addImage(getImageResource(GAZESHOW))
                 .setImageLayout(Card.ImageLayout.LEFT)
@@ -431,6 +421,7 @@ public final class DisplayActivity extends Activity {
             //case CALIBRATION:  return R.drawable.rm;
             case GAZESHOW:  return  R.drawable.gazeshow;
             case GAZELIST:  return  R.drawable.gazelist;
+            case EXPERIMENT_SHOW : return R.drawable.gazeshow;
 
             default: return 0;
         }
@@ -483,8 +474,11 @@ public final class DisplayActivity extends Activity {
                         args.putSerializable("ARRAYLIST", (Serializable) ids);
                         intent.putExtra("IDs", args);
                         startActivityForResult(intent, GAZELIST);
-                    }
+                    }break;
 
+                    case EXPERIMENT_SHOW :
+                        am.playSoundEffect( Sounds.TAP);
+                        startActivity(new Intent(DisplayActivity.this, ExperimentShow.class));
                         break;
 
                     case MOREDEMOS:

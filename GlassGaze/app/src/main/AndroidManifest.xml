@@ -82,6 +82,10 @@
             android:exported="true"
             android:hardwareAccelerated="true" />
         <activity
+            android:name=".GazeDisplay.Demos.ExperimentShow"
+            android:exported="true"
+            android:hardwareAccelerated="true" />
+        <activity
             android:name=".GazeLiveView.Demos.SnapShot"
             android:exported="true"
             android:hardwareAccelerated="true" />

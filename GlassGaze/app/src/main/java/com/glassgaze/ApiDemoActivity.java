@@ -16,43 +16,35 @@
 
 package com.glassgaze;
 
-import com.github.barcodeeye.scan.CaptureActivity;
-
-
-import com.glassgaze.GazeDisplay.DisplayActivity;
-
-import com.glassgaze.GazeLiveView.LiveViewActivity;
-import com.google.android.glass.app.Card;
-import com.google.android.glass.media.Sounds;
-
-import com.glassgaze.card.CardAdapter;
-import com.google.android.glass.widget.CardScrollAdapter;
-import com.google.android.glass.widget.CardScrollView;
-
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Toast;
+
+import com.github.barcodeeye.scan.CaptureActivity;
+import com.glassgaze.GazeDisplay.DisplayActivity;
+import com.glassgaze.card.CardAdapter;
+import com.google.android.glass.app.Card;
+import com.google.android.glass.media.Sounds;
+import com.google.android.glass.widget.CardScrollAdapter;
+import com.google.android.glass.widget.CardScrollView;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-import android.os.RemoteException;
-import android.os.Message;
-import android.widget.Toast;
-
-import android.content.ComponentName;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 
 
 public class ApiDemoActivity extends Activity  {
@@ -63,8 +55,7 @@ public class ApiDemoActivity extends Activity  {
 
     // Index of the cards.
     static final int DISPLAY = 0;
-    static final int LIVEVIEW = 1;
-    static final int EXIT = 2;
+    static final int EXIT = 1;
 
 
 
@@ -248,11 +239,6 @@ public class ApiDemoActivity extends Activity  {
                 .setImageLayout(Card.ImageLayout.LEFT)
                 .setText(R.string.text_DISPLAY));
 
-        cards.add(LIVEVIEW, new Card(context)
-                .addImage(getImageResource(LIVEVIEW))
-                .setImageLayout(Card.ImageLayout.LEFT)
-                .setText(R.string.text_LIVEVIEW));
-
 
         cards.add(EXIT, new Card(context).setText(R.string.text_EXIT));
 
@@ -270,7 +256,6 @@ public class ApiDemoActivity extends Activity  {
     public static int getImageResource(int i) {
         switch (i) {
             case DISPLAY:  return R.drawable.icon_displaygaze;
-            case LIVEVIEW:  return R.drawable.icon_liveview;
 
             default: return 0;
         }
@@ -368,12 +353,6 @@ public class ApiDemoActivity extends Activity  {
                         startActivity(new Intent(ApiDemoActivity.this, DisplayActivity.class));
 
                         break;
-                    case LIVEVIEW:
-                        startActivity(new Intent(ApiDemoActivity.this, LiveViewActivity.class));
-                        break;
-
-
-
                     case EXIT:
                         mWifiService.tts.shutdown();
                         mWifiService.tts = null;

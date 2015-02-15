@@ -1,6 +1,3 @@
-/**
- * Created by diako on 8/27/2014.
- */
 package com.glassgaze.GazeDisplay.Demos;
 
 
@@ -24,9 +21,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.glassgaze.Constants;
 import com.glassgaze.GazeDisplay.Calibration;
 import com.glassgaze.GazeDisplay.PointerView_display;
 import com.glassgaze.MessageType;
@@ -38,7 +35,7 @@ import com.google.android.glass.touchpad.Gesture;
 import com.google.android.glass.touchpad.GestureDetector;
 import com.google.android.glass.view.WindowUtils;
 
-public class GazeShow extends Activity{
+public class ExperimentShow extends Activity{
 
 
     private Boolean showPointer=true;
@@ -96,7 +93,7 @@ public class GazeShow extends Activity{
 
         }
         public void onServiceDisconnected(ComponentName className) {
-            Toast.makeText(GazeShow.this, "Service is disconnected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ExperimentShow.this, "Service is disconnected", Toast.LENGTH_SHORT).show();
             mBounded = false;
             mWifiService = null;
         }
@@ -106,13 +103,14 @@ public class GazeShow extends Activity{
 
     };
 
-private void init()
-{
-    mWifiService.GazeStream(RGT,true);
-    mPointerViewDisplay = (PointerView_display) findViewById(R.id.pointerView_display);
-    mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
+    private void init()
+    {
+        //TODO stop streaming immediately
+        mWifiService.GazeStream(RGT,false);
+        mPointerViewDisplay = (PointerView_display) findViewById(R.id.pointerView_display);
+        mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
 
-}
+    }
     //......................WIFI SERVICE
 
 
@@ -121,139 +119,101 @@ private void init()
 
 
 
-/**
- * Activity Handler of incoming messages
- */
-class IncomingHandler extends Handler {
-    @Override
-    public void handleMessage(Message msg) {
+    /**
+     * Activity Handler of incoming messages
+     */
+    class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
 
 
-        switch (msg.what) {
+            switch (msg.what) {
 
-            case WifiService.MESSAGE_TYPE_TEXT: {
-                Bundle b = msg.getData();
-                CharSequence text = null;
-                if (b != null) {
-                    text = b.getCharSequence("data");
-                } else {
-                    text = "Service responded with empty message";
-                }
-                Log.d("MessengerActivity", "Response: " + text);
+                case MessageType.MESSAGE_READ:
+
+                    byte[] readBuf = (byte[]) msg.obj;
+
+                    switch (Utils.GetIndicator(readBuf)) {
+                        case MessageType.toGLASS_Calibrate_Display:
+
+
+                            int x0 = Utils.GetX(readBuf);
+                            int y0 = Utils.GetY(readBuf);
+
+                            if ((x0==-1 && y0==-1)||(x0==-3 && y0==-3) )//calibrate or correct offset
+                            {
+
+
+                                Intent i = new Intent(ExperimentShow.this, Calibration.class);
+                                startActivityForResult(i, 1);
+
+
+                            }
+
+                            break;
+
+                        case MessageType.TO_CLIENT_EXPERIMENT :
+                            //TODO
+
+                            int x1 = Utils.GetX(readBuf);
+                            int y1 = Utils.GetY(readBuf);
+
+                            if( x1 != -1 && y1 != -1 ){
+                                mPointerViewDisplay.GazeEvent(x1, y1, 1);
+                            }
+                            mWifiService.write(MessageType.toHAYTHAM_READY);
+
+                            break;
+
+                        case MessageType.TO_CLIENT_EXPERIMENT_STOP :
+
+                            //TODO
+                            mPointerViewDisplay.hideFingerTrace(1,true);
+                            Done();
+
+                            break;
+                        case MessageType.toGLASS_GAZE_RGT:
+
+                            int x = Utils.GetX(readBuf);
+                            int y = Utils.GetY(readBuf);
+
+                            if( showPointer )
+                            {
+
+                                mPointerViewDisplay.GazeEvent(x, y, 0);
+                                mPointerViewDisplay.postInvalidate();
+
+                            }
+                            // if(cardSelected && mCardScroller.getSelectedItemId()==APP?) DO SOMETHING ELSE!;
+
+
+                            break;
+                        default:
+                            super.handleMessage(msg);
+                    }
+
+                    break;
             }
-            break;
-
-
-            case MessageType.MESSAGE_STATE_CHANGE:
-                switch (msg.arg1) {
-
-                    case WifiService.STATE_CONNECTED:
-
-                        //mTitle.setText(R.string.title_connected);
-
-                        break;
-                    case WifiService.STATE_DISCONNECTED:
-
-
-                        break;
-                    case WifiService.STATE_CONNECTING:
-
-
-                        // mTitle.setText(R.string.title_connecting);
-                        break;
-                }
-                break;
-
-
-            case MessageType.MESSAGE_TOAST:
-                Toast.makeText(getApplicationContext(), msg.getData().getString(Constants.TOAST),Toast.LENGTH_SHORT).show();
-                break;
-
-            case MessageType.MESSAGE_READ:
-
-                byte[] readBuf = (byte[]) msg.obj;
-
-                switch (Utils.GetIndicator(readBuf)) {
-                    case MessageType.toGLASS_LetsCorrectOffset:
-
-                        mWifiService.GazeStream(RGT, false);
-                        mWifiService.write(MessageType.toHAYTHAM_Calibrate_Display_Correct);
-
-
-                        break;
-                    case MessageType.toGLASS_Calibrate_Display:
-
-
-                        int x0 = Utils.GetX(readBuf);
-                        int y0 = Utils.GetY(readBuf);
-
-                        if ((x0==-1 && y0==-1)||(x0==-3 && y0==-3) )//calibrate or correct offset
-                        {
-
-
-                            Intent i = new Intent(GazeShow.this, Calibration.class);
-                            startActivityForResult(i, 1);
-
-
-                        }
-
-                        break;
-
-                    case MessageType.toGLASS_test:
-                        Toast.makeText(getApplicationContext(), "Test Msg from Haytham", Toast.LENGTH_SHORT).show();  //  C1S
-
-                        break;
-                    case MessageType.toGLASS_ERROR_NOTCalibrated:
-                        mWifiService.Speek("Calibrate first!");
-                        break;
-
-
-                    case MessageType.toGLASS_GAZE_RGT:
-
-                        int x = Utils.GetX(readBuf);
-                        int y = Utils.GetY(readBuf);
-
-                        if( showPointer )
-                        {
-
-                            mPointerViewDisplay.GazeEvent(x, y, 0);
-                            mPointerViewDisplay.postInvalidate();
-
-                        }
-                        // if(cardSelected && mCardScroller.getSelectedItemId()==APP?) DO SOMETHING ELSE!;
-
-
-                        break;
-                    default:
-                        super.handleMessage(msg);
-                }
-
-                break;
         }
     }
-}
 
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    private void Done(){
         AudioManager audio = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        audio.playSoundEffect(Sounds.SUCCESS);
 
-        if (requestCode == 1) {
-            if(resultCode == RESULT_OK){
+        setContentView(R.layout.menu_layout);
+        ((ImageView)findViewById(R.id.icon)).setImageResource(R.drawable.ic_done_50);
 
-                //String result=data.getStringExtra("result");
+        new Handler().postDelayed(new Runnable()
+        {
+            public void run()
+            {
+                setContentView(R.layout.display_blank);
+                mPointerViewDisplay = (PointerView_display) findViewById(R.id.pointerView_display);
+                mPointerViewDisplay.setBackgroundColor(Color.BLACK);
             }
-            if (resultCode == RESULT_CANCELED) {
-
-                //Write your code if there's no result
-               // audio.playSoundEffect(Sounds.ERROR);
-
-            }
-        }
-    }//onActivityResult
-
-
-
-
+        }, 1000);
+    }
 
 
     @Override
@@ -271,6 +231,8 @@ class IncomingHandler extends Handler {
 
         setContentView(R.layout.display_blank);
 
+        mPointerViewDisplay = (PointerView_display) findViewById(R.id.pointerView_display);
+        mPointerViewDisplay.setBackgroundColor(Color.BLACK);
     }
 
     //...................................................
@@ -310,7 +272,7 @@ class IncomingHandler extends Handler {
     @Override
     public boolean onCreatePanelMenu(int featureId, Menu menu) {
         if (featureId == WindowUtils.FEATURE_VOICE_COMMANDS) {
-            getMenuInflater().inflate(R.menu.voice_menu_display_gazeshow, menu);
+            getMenuInflater().inflate(R.menu.voice_menu_display_experiment, menu);
             return true;
         }
         // Good practice to pass through, for options menu.
@@ -337,37 +299,13 @@ class IncomingHandler extends Handler {
                     mWifiService.Speek("Wait!");
                     mWifiService.write(MessageType.toHAYTHAM_Calibrate_Display_4);
                 } break;
-                case R.id.menu_correctOffset:  {
-                    mWifiService. GazeStream(RGT, false);
-                    mWifiService.Speek("Wait!");
-                    mWifiService.write(MessageType.toHAYTHAM_Calibrate_Display_Correct);
+                case R.id.menu_experiment:{
+                    //TODO
+                    mWifiService.Speek("OK, Follow the white circle");
+                    mPointerViewDisplay.GazeEvent(320, 180, 1);
+                    mWifiService.write(MessageType.TO_EYEDROID_EXPERIMENT_START);
+                }break;
 
-                } break;
-                case R.id.menu_color_white:
-                    int backgroundColor = Color.BLACK;
-                {
-                    backgroundColor =Color.WHITE;
-                    mWifiService.backgroundColor= backgroundColor;
-                    mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
-                }  break;
-                case R.id.menu_color_gray:  {
-                    backgroundColor =Color.GRAY;
-                    mWifiService.backgroundColor= backgroundColor;
-                    mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
-                } break;
-                case R.id.menu_color_blue:  {
-                    backgroundColor =Color.BLUE;
-                    mWifiService.backgroundColor= backgroundColor;
-                    mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
-                }  break;
-                case R.id.menu_color_black:  {
-                    backgroundColor =Color.BLACK;
-                    mWifiService.backgroundColor= backgroundColor;
-                    mPointerViewDisplay.setBackgroundColor(mWifiService.backgroundColor);
-                }  break;
-
-                case R.id.menu_pointer_show: showPointer=true;  break;
-                case R.id.menu_pointer_hide: showPointer=false; mPointerViewDisplay.hideFingerTrace(0,true);  break;
                 default: return true;  // No change.
             }
 
@@ -381,17 +319,17 @@ class IncomingHandler extends Handler {
         gestureDetector.setBaseListener( new GestureDetector.BaseListener() {
             @Override
             public boolean onGesture(Gesture gesture) {
-               if (gesture == Gesture.TWO_TAP) {
+                if (gesture == Gesture.TWO_TAP) {
 
-                   // Plays sound.
-                   AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                   am.playSoundEffect(Sounds.TAP);
-                   // Toggles voice menu. Invalidates menu to flag change.
-                   mVoiceMenuEnabled = !mVoiceMenuEnabled;
-                   getWindow().invalidatePanelMenu(WindowUtils.FEATURE_VOICE_COMMANDS);
+                    // Plays sound.
+                    AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    am.playSoundEffect(Sounds.TAP);
+                    // Toggles voice menu. Invalidates menu to flag change.
+                    mVoiceMenuEnabled = !mVoiceMenuEnabled;
+                    getWindow().invalidatePanelMenu(WindowUtils.FEATURE_VOICE_COMMANDS);
 
-                   return true;
-               }
+                    return true;
+                }
                 return false;
             }
         });
@@ -414,3 +352,4 @@ class IncomingHandler extends Handler {
 
 
 }
+

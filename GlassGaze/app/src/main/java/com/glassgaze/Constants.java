@@ -17,16 +17,16 @@ public class Constants {
 
       public static Boolean UDPBroadcasting=false;
 
-      public static Boolean QRcode_Scan=true;
+      public static Boolean QRcode_Scan=false;
 
-      public static String directServerIP= "10.0.0.16";
+      public static String directServerIP= "192.168.150.3";
 
     public static final int  display_W=640;
     public static final int  display_H = 360;
 
-      public static final int  SERVER_PORT =  4444;
+      public static final int  SERVER_PORT =  5000;
       public static final int  SERVER_PORT_UDP =  4343;
-      public static final int  SERVER_PORT_UDP_GAZE =  4545;
+      public static final int  SERVER_PORT_UDP_GAZE =  6000;
 
 
 

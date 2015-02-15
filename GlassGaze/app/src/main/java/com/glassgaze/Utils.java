@@ -20,30 +20,31 @@ public class Utils {
 
     public static int GetIndicator(byte[] a)
     {
-        byte[] ret = new byte[4];
-        java.lang.System.arraycopy(a, 0, ret, 0, 4);
-        return Utils.byteArrayToInt_reverse(ret);
+        return byteArrayToInt(a , 0);
     }
     public static int GetX(byte[] a)
     {
-        byte[] ret = new byte[4];
-        java.lang.System.arraycopy(a, 4, ret, 0, 4);
-        return Utils.byteArrayToInt_reverse(ret);
+
+        return byteArrayToInt(a , 4);
+
     }
 
     public static int GetY(byte[] a)
     {
-        byte[] ret = new byte[4];
-        java.lang.System.arraycopy(a, 8, ret, 0, 4);
-        return Utils.byteArrayToInt_reverse(ret);
+
+        return byteArrayToInt(a , 8);
+
     }
 
-    public static int byteArrayToInt(byte[] b)
+    public static int byteArrayToInt(byte[] b , int offset)
     {
-        return   b[3] & 0xFF |
-                (b[2] & 0xFF) << 8 |
-                (b[1] & 0xFF) << 16 |
-                (b[0] & 0xFF) << 24;
+		int ret = 0;
+		for (int i=offset; i<offset+4; i++) {
+			ret <<= 8;
+			ret |= (int)b[i] & 0xFF;
+		}
+		return ret;
+
     }
     public static int byteArrayToInt_reverse(byte[] b)
     {

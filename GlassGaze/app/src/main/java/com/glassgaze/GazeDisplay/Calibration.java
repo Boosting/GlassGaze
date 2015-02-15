@@ -304,16 +304,6 @@ private void Done(){
     }
 
     @Override
-    protected void onStart() {
-        Intent intent= new Intent(this, WifiService.class);
-        bindService(intent, mConnection,Context.BIND_AUTO_CREATE);
-
-        super.onStart();
-
-
-    }
-
-    @Override
     protected void onResume() {
 
         Intent intent= new Intent(this, WifiService.class);
@@ -323,15 +313,6 @@ private void Done(){
 
     }
 
-    @Override
-    protected void onStop() {
-        if(mBounded) {
-            unbindService(mConnection);
-            mBounded = false;
-        }
-        super.onStop();
-
-    }
     @Override
     protected void onPause() {
 

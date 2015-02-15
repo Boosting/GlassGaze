@@ -66,5 +66,10 @@ public class MessageType {
     public static final int toGLASS_LetsCorrectOffset = 2009;
 
 
+    public static final int  TO_EYEDROID_EXPERIMENT_START = 3001;
+    public static final int  TO_CLIENT_EXPERIMENT = 3002;
+    public static final int  TO_CLIENT_EXPERIMENT_STOP = 3003;
+
+
 
 }

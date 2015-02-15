@@ -87,6 +87,7 @@
     <string name="menu_product">Pick a product manager</string>
 
     <string name="menu_calibrate_display">Calibrate</string>
+    <string name="menu_experiment_start">Start</string>
     <string name="menu_OnePoint_calibrate">Correct offset</string>
     <string name="menu_pointer_display">Pointer</string>
     <string name="menu_Background_Color">Background Color</string>

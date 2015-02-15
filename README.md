@@ -10,7 +10,7 @@ The changes made are listed bellow:
 - An activity was added to conduct an experiment. The experiment consisted in showing a set of random dots on the glass display while coordinates were sampled from [EyeDroid](https://github.com/centosGit/EyeDroid/tree/glassgaze_demo) in order to evaluate the system accuracy.
 - Some additional steps were added in the communication protocol for calibration and the experiment process.
 
-<img src="Images/EyeDroid_GlassGaze.PNG?raw=true" height="300"/>
+<img src="ScreenShots/EyeDroid_GlassGaze.PNG?raw=true" height="300"/>
 
 How to use
 ----------
